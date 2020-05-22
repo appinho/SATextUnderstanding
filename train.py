@@ -12,7 +12,7 @@ import cv2
 
 batch_size = 128
 num_classes = 10
-epochs = 10
+epochs = 3
 
 # input image dimensions
 img_rows, img_cols = 28, 28
@@ -76,4 +76,4 @@ model.fit(x_train, y_train,
 score = model.evaluate(x_test, y_test, verbose=0)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
-model.save('model/mnist4')
+model.save('model/mnist2')
