@@ -5,6 +5,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras import backend as K
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import ModelCheckpoint
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -12,7 +15,7 @@ import cv2
 
 batch_size = 128
 num_classes = 10
-epochs = 3
+epochs = 5
 
 # input image dimensions
 img_rows, img_cols = 28, 28
@@ -56,23 +59,41 @@ model.add(Conv2D(32, kernel_size=(3, 3),
                  input_shape=input_shape))
 model.add(Conv2D(64, (3, 3), activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
+model.add(Dropout(0.5)) # 0.25
 model.add(Flatten())
 model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(num_classes, activation='softmax'))
 
-opt = keras.optimizers.Adam(learning_rate=0.001)
+opt = keras.optimizers.Adam(learning_rate=0.0004)
 
 model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=opt,
               metrics=['accuracy'])
-
-model.fit(x_train, y_train,
-          batch_size=batch_size,
+# https://towardsdatascience.com/exploring-image-data-augmentation-with-keras-and-tensorflow-a8162d89b844
+if(True):
+  filepath="model/mnist-{epoch:02d}-{val_accuracy:.2f}.hdf5"
+  checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+  callbacks_list = [checkpoint]
+  datagen = ImageDataGenerator(
+      rotation_range=30,
+      width_shift_range=0.3,
+      height_shift_range=0.3,
+      shear_range=35.0,
+      zoom_range=[0.7, 1.3])
+  datagen.fit(x_train)
+  model.fit(datagen.flow(x_train, y_train,
+          batch_size=batch_size),
           epochs=epochs,
           verbose=1,
-          validation_data=(x_test, y_test))
+          validation_data=(x_test, y_test),
+          callbacks=callbacks_list)
+else:
+  model.fit(x_train, y_train,
+            batch_size=batch_size,
+            epochs=epochs,
+            verbose=1,
+            validation_data=(x_test, y_test))
 score = model.evaluate(x_test, y_test, verbose=0)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])

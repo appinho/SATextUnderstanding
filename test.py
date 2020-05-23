@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.datasets import mnist
 
 # Load model
-model = keras.models.load_model('model/mnist')
+model = keras.models.load_model('model/mnist.hdf5')
 
 def pred(roi28, sol):
 	
